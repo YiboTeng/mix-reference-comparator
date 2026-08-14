@@ -274,4 +274,3 @@ codex plugin add vocal-reference-comparator@personal
 - 少量参考不足以建立稳定的风格共性；少于三个参考时应谨慎解释 Consensus。
 - 音高平台、Vibrato 和 Formant Proxy 仅作为低可信辅助项。
 - 自动报告仍需要结合监听、等响度 A/B Test 和实际工程上下文进行判断。
-
