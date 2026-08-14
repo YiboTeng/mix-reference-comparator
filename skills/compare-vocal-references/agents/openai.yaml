@@ -1,0 +1,4 @@
+interface:
+  display_name: "人声参考对比分析"
+  short_description: "用一个或多个参考细分诊断人声音色、动态、纹理与立体声场"
+  default_prompt: "使用 $compare-vocal-references 将我的一条人声音轨与一个或多个参考人声进行对比，保留逐参考深度诊断，汇总参考区间、共性和个性，并为每个子图标注可信度。"
