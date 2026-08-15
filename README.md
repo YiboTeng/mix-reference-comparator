@@ -123,6 +123,12 @@ codex plugin add vocal-reference-comparator@personal
 判断我的 Doubler 为什么听起来像左、中、右三个点，而参考人声为什么像连续扩散区域。
 ```
 
+### 默认输出路径与对话内报告
+
+如果没有指定输出路径，插件会在运行前明确告知实际保存位置。默认情况下，若 `C:\Projects\work` 存在且可写，会在其中创建本次任务的独立子目录；否则使用当前任务可写的独立输出目录。
+
+分析完成后，插件会先把最终报告的完整正文、表格、结论和主要图片直接呈现在 Codex 回复中，再列出 `reference-set-report.md` 等输出文件的绝对路径。因此没有合适的 Markdown 查看器也能直接阅读报告。
+
 ## 直接运行分析脚本
 
 插件以 `compare_reference_set.py` 作为统一 Orchestrator。先进入 Skill 目录：
