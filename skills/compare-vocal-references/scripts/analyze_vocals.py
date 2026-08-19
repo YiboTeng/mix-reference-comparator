@@ -15,6 +15,10 @@ import sys
 from pathlib import Path
 
 
+PLUGIN_ID = "mix-reference-comparator"
+ANALYSIS_MODE = "vocal-reference"
+
+
 def _import_dependencies():
     """集中导入第三方库，并在缺失依赖时给出可直接执行的安装指引。"""
     try:
@@ -575,6 +579,8 @@ def main() -> int:
     make_charts(records, args.out_dir, font_path)
     draft_report(records, args.out_dir, args.reference_is_separated)
     manifest = {
+        "plugin_id": PLUGIN_ID,
+        "analysis_mode": ANALYSIS_MODE,
         "metrics": "metrics.json",
         "draft_report": "analysis-draft.md",
         "charts": [

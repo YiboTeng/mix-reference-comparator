@@ -1,6 +1,6 @@
-# Vocal Reference Comparator
+# Mix Reference Comparator
 
-一个面向 Codex 的人声参考对比插件。它将一条待评估人声与一个或多个参考人声进行可重复测量，生成中文报告、PNG 图表、参考区间、离群项判断和可执行的混音调整建议。
+一个面向 Codex、可扩展到多种混音素材的参考对比插件。当前稳定模式是人声参考对比：将一条待评估人声与一个或多个参考人声进行可重复测量，生成中文报告、PNG 图表、参考区间、离群项判断和可执行的混音调整建议。完整混音成品模式仍处于实验验证阶段，尚未作为稳定 Skill 发布。
 
 插件重点不是判断“用了哪一款插件”，而是区分：
 
@@ -41,8 +41,8 @@ ffmpeg -i "input.m4a" -c:a pcm_s24le "output.wav"
 ### 1. Clone 仓库
 
 ```powershell
-git clone https://github.com/YiboTeng/vocal-reference-comparator.git `
-  "$env:USERPROFILE\.codex\plugins\vocal-reference-comparator"
+git clone https://github.com/YiboTeng/mix-reference-comparator.git `
+  "$env:USERPROFILE\.codex\plugins\mix-reference-comparator"
 ```
 
 ### 2. 注册到 Personal Marketplace
@@ -57,10 +57,10 @@ git clone https://github.com/YiboTeng/vocal-reference-comparator.git `
 
 ```json
 {
-  "name": "vocal-reference-comparator",
+  "name": "mix-reference-comparator",
   "source": {
     "source": "local",
-    "path": "./.codex/plugins/vocal-reference-comparator"
+    "path": "./.codex/plugins/mix-reference-comparator"
   },
   "policy": {
     "installation": "AVAILABLE",
@@ -80,10 +80,10 @@ git clone https://github.com/YiboTeng/vocal-reference-comparator.git `
   },
   "plugins": [
     {
-      "name": "vocal-reference-comparator",
+      "name": "mix-reference-comparator",
       "source": {
         "source": "local",
-        "path": "./.codex/plugins/vocal-reference-comparator"
+        "path": "./.codex/plugins/mix-reference-comparator"
       },
       "policy": {
         "installation": "AVAILABLE",
@@ -100,7 +100,7 @@ git clone https://github.com/YiboTeng/vocal-reference-comparator.git `
 完全退出并重新打开 Codex，然后从 Plugins Directory 的 `Personal` 来源安装；也可以使用 CLI：
 
 ```powershell
-codex plugin add vocal-reference-comparator@personal
+codex plugin add mix-reference-comparator@personal
 ```
 
 安装或更新后建议新建 Codex 任务，确保新任务加载最新 Skill。
@@ -110,7 +110,7 @@ codex plugin add vocal-reference-comparator@personal
 向 Codex 提供一条待评估人声和一个或多个参考文件，例如：
 
 ```text
-请用 Vocal Reference Comparator 分析：
+请用 Mix Reference Comparator 的人声参考模式分析：
 待评估人声：C:\Audio\my-vocal.wav
 参考 A：C:\Audio\reference-a.wav
 参考 B：C:\Audio\reference-b.wav
@@ -245,7 +245,7 @@ output/
 ## 项目结构
 
 ```text
-vocal-reference-comparator/
+mix-reference-comparator/
 ├── .codex-plugin/
 │   └── plugin.json
 ├── skills/
@@ -267,8 +267,8 @@ vocal-reference-comparator/
 拉取新版本后重新安装插件：
 
 ```powershell
-git -C "$env:USERPROFILE\.codex\plugins\vocal-reference-comparator" pull
-codex plugin add vocal-reference-comparator@personal
+git -C "$env:USERPROFILE\.codex\plugins\mix-reference-comparator" pull
+codex plugin add mix-reference-comparator@personal
 ```
 
 随后重启 Codex，并在新任务中验证更新。

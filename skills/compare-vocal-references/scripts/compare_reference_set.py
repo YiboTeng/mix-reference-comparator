@@ -32,6 +32,8 @@ except ImportError as exc:
     ) from exc
 
 
+PLUGIN_ID = "mix-reference-comparator"
+ANALYSIS_MODE = "vocal-reference"
 BANDS = [
     "20-80", "80-150", "150-300", "300-600", "600-1200",
     "1200-2500", "2500-5000", "5000-8000", "8000-12000",
@@ -698,6 +700,8 @@ def main() -> int:
         for label, item in pairwise.items()
     }
     payload = {
+        "plugin_id": PLUGIN_ID,
+        "analysis_mode": ANALYSIS_MODE,
         "schema": "vocal-reference-set-v1",
         "analysis_level": args.analysis_level,
         "target": {"label": target.label, "path": str(target.path)},
@@ -723,6 +727,8 @@ def main() -> int:
         json.dumps(execution_log, ensure_ascii=False, indent=2), encoding="utf-8"
     )
     print(json.dumps({
+        "plugin_id": PLUGIN_ID,
+        "analysis_mode": ANALYSIS_MODE,
         "metrics": str(args.out_dir / "reference-set-metrics.json"),
         "report": str(args.out_dir / "reference-set-report.md"),
         "charts": [str(args.out_dir / name) for name in charts],

@@ -23,6 +23,8 @@ from matplotlib.font_manager import FontProperties
 from scipy import ndimage, signal
 
 
+PLUGIN_ID = "mix-reference-comparator"
+ANALYSIS_MODE = "vocal-reference"
 EPS = 1e-12
 BANDS = [
     (80, 150, "80–150"), (150, 300, "150–300"),
@@ -638,7 +640,7 @@ def main():
         print(f"分析 {label} ...",flush=True)
         rec,spec=analyze(label,path,args.sample_rate,args.segment_seconds)
         records.append(rec); specs.append(spec)
-    public=finite_obj({"schema":"vocal-detail-diagnostics-v1","records":records})
+    public=finite_obj({"plugin_id":PLUGIN_ID,"analysis_mode":ANALYSIS_MODE,"schema":"vocal-detail-diagnostics-v1","records":records})
     (args.out_dir/"metrics.json").write_text(json.dumps(public,ensure_ascii=False,indent=2),encoding="utf-8")
     plot_timbre(records,specs,args.out_dir); plot_articulation(records,args.out_dir)
     plot_dynamics(records,args.out_dir); plot_texture(records,args.out_dir)

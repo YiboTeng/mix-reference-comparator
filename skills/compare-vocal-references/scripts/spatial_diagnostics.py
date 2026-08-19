@@ -20,6 +20,8 @@ from matplotlib import font_manager
 from scipy import signal
 
 
+PLUGIN_ID = "mix-reference-comparator"
+ANALYSIS_MODE = "vocal-reference"
 EPS = 1e-15
 BANDS = [(80, 150), (150, 300), (300, 600), (600, 1200),
          (1200, 2500), (2500, 5000), (5000, 8000),
@@ -597,6 +599,8 @@ def main():
         json.dumps(public, ensure_ascii=False, indent=2), encoding="utf-8"
     )
     print(json.dumps({
+        "plugin_id": PLUGIN_ID,
+        "analysis_mode": ANALYSIS_MODE,
         "metrics": str(args.out_dir / "spatial_metrics.json"),
         "report": str(args.out_dir / "experiment_report.md"),
         "charts": ["01_spatial_distribution.png",
