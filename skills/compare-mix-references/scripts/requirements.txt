@@ -1,0 +1,5 @@
+numpy>=2.0,<3
+scipy>=1.13,<2
+soundfile>=0.12,<1
+matplotlib>=3.8,<4
+pyloudnorm>=0.1,<1

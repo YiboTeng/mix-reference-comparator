@@ -7,6 +7,13 @@ description: 将一条待评估人声音轨与一个或多个参考人声音轨�
 
 以证据为基础对比人声，但不要假装能从渲染后的音频准确反推出原始插件名称。必须区分可测量差异、合理处理原因和录音源/分离算法限制。
 
+## 模式边界
+
+- 本 skill 只处理干声、处理后独唱、Vocal Stem 或人声分离文件。
+- 输入包含 Vocal 与 Beats/Instrumental 的完整 Mix/Master 时，改用 `$compare-mix-references`。
+- 用户只说“启动 Mix Reference Comparator”而没有说明素材类型时，先使用 `$select-reference-analysis-mode` 让用户选择；已经明确是人声素材时不要重复询问。
+- 干声与完整混音不能放入同一个参考统计集；需要时分别运行两个模式。
+
 ## 必须阅读
 
 分析音频前，完整阅读：

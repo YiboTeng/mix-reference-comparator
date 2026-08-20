@@ -1,173 +1,84 @@
 # Mix Reference Comparator
 
-一个面向 Codex、可扩展到多种混音素材的参考对比插件。当前稳定模式是人声参考对比：将一条待评估人声与一个或多个参考人声进行可重复测量，生成中文报告、PNG 图表、参考区间、离群项判断和可执行的混音调整建议。完整混音成品模式仍处于实验验证阶段，尚未作为稳定 Skill 发布。
+面向 Codex 的混音参考对比插件。启动时可选择两种模式：
 
-插件重点不是判断“用了哪一款插件”，而是区分：
+1. 干声/人声参考对比。
+2. 包含人声与伴奏的完整 Mix/Master 参考对比。
 
-- 可直接测量的音频差异；
-- 多项证据支持的处理方向；
-- 仅凭渲染音频无法确认的假设；
-- Source Separation（人声分离）、编码、歌手和录音条件带来的限制。
+插件以可重复测量和因果边界为核心，不根据渲染音频猜具体商业插件、Preset 或完整母带链。所有 PNG 的每个独立子图分别显示可信度和主要限制。
 
-## 主要能力
+## 两种模式
 
-- 支持一条 Target Vocal（待评估人声）对一个或多个 Reference Vocal（参考人声）。
-- 对比 Levels、Timbre、Dynamics、Texture、Articulation、Sibilance 和 Harmonics。
-- 分析 Mid/Side、ILD、IPD、Coherence、Delay Peak 和 Side Tail 等空间证据。
-- 辅助判断点状 Doubler、Haas Delay、Microshift、Double Tracking、Modulation 和 Wide Reverb 的差异特征。
-- 多参考模式下统计 Median、IQR、Direction Consistency 和 Outlier Score。
-- 为每个独立子图分别标注可信度及主要限制。
-- 输出中文 Markdown 报告、JSON 指标、PNG 图表和 Execution Log。
+### 干声对比
 
-## 适用输入
+使用 `compare-vocal-references`：
 
-可以分析以下人声素材：
+- 输入一条 Target Vocal 和一个或多个 Reference Vocal。
+- 支持干声、处理后独唱、Vocal Stem 和 Source Separation 人声。
+- 分析 Levels、Timbre、Dynamics、Texture、Articulation、Sibilance、Harmonics 和高级立体声场。
+- 可辅助区分点状 Doubler、Haas Delay、Microshift、Double Tracking、Modulation 和 Wide Reverb 的证据特征。
 
-- 原始或已处理的独唱人声；
-- Vocal Stem；
-- Source Separation 得到的人声；
-- `WAV`、`MP3`、`FLAC` 等 `soundfile` 可解码格式。
+### 完整混音成品对比
 
-部分 `AAC/M4A` 文件可能无法被当前音频后端直接解码。遇到此情况，请先用 `ffmpeg` 转成 `WAV`：
+使用 `compare-mix-references`：
+
+- 输入一首 Target Mix/Master 和一个或多个完整混音参考。
+- 只有 Master 时分析响度、峰值、动态、静态/动态音色、M/S、Correlation、Mono Translation、低频居中和段落结构。
+- 提供可靠 Vocal/Drums/Bass/Lead/Pad Stems 后，进一步分析 Vocal-to-Instrument Ratio、频率冲突、空间关系、Stem 平衡、鼓瞬态、Bass、Lead/Pad 占位和编曲密度。
+- 多参考模式统计 Median、IQR、Direction Consistency、Outlier 和 Reference Compatibility。
+- `original_stems`、`official_stems`、`source_separated` 和 `master_only` 会传播为不同可信度上限。
+
+受控实验没有稳定通过以下强因果推断，因此正式模式不会把它们写成结论：
+
+- 用简单全带包络相关证明 Vocal-triggered Ducking。
+- 用 Kick/Bass 包络相关证明 Sidechain Compression。
+
+## 启动与模式选择
+
+笼统启动插件时，使用 `select-reference-analysis-mode` 先询问：
+
+```text
+请选择分析模式：
+1）干声/独唱/Vocal Stem 对比
+2）包含人声与伴奏的完整混音成品对比
+```
+
+用户已经明确素材类型时直接进入对应模式，不重复询问。干声与完整 Mix 不应放在同一个参考统计集。
+
+## 输入格式
+
+音频支持 `WAV`、`MP3`、`FLAC` 等 `soundfile` 可解码格式。部分 `AAC/M4A` 可能需要先转换：
 
 ```powershell
 ffmpeg -i "input.m4a" -c:a pcm_s24le "output.wav"
 ```
 
-参考文件不需要与待评估人声时间对齐。不同歌曲或不同演唱会分别选取高能量片段，并比较长期统计；只有同一表演且可靠对齐时才适合进行 Null Test。
+两种模式都需要一条 Target 和至少一条 Reference。参考不要求时间对齐；不同歌曲比较长期统计和各自段落，只有同一表演且可靠对齐时才适合 Null Test。
 
-## Codex 个人安装
+完整混音模式使用任务级 `mix-project.json`。示例和字段定义见：
 
-### 1. Clone 仓库
+- `skills/compare-mix-references/references/mix-input-schema.md`
+- `skills/compare-mix-references/references/mix-measurement-and-confidence.md`
 
-```powershell
-git clone https://github.com/YiboTeng/mix-reference-comparator.git `
-  "$env:USERPROFILE\.codex\plugins\mix-reference-comparator"
-```
+## 默认输出与对话内报告
 
-### 2. 注册到 Personal Marketplace
-
-个人市场文件位于：
+如果用户没有指定输出目录，插件会在运行前明确说明实际路径。默认使用：
 
 ```text
-%USERPROFILE%\.agents\plugins\marketplace.json
+C:\Projects\work\<本次任务子目录>
 ```
 
-如果文件已经存在，只需将下面的对象加入现有 `plugins[]`，不要覆盖其他插件：
+该目录不存在或不可写时，改用当前任务的独立可写目录。不会覆盖源音频。
 
-```json
-{
-  "name": "mix-reference-comparator",
-  "source": {
-    "source": "local",
-    "path": "./.codex/plugins/mix-reference-comparator"
-  },
-  "policy": {
-    "installation": "AVAILABLE",
-    "authentication": "ON_INSTALL"
-  },
-  "category": "Creative"
-}
-```
+分析完成后，Codex 必须先在回复中完整呈现报告正文和主要图片，再列出报告、指标、执行日志和 PNG 的绝对路径。用户不需要 Markdown 查看器也能阅读结果。
 
-如果还没有个人市场文件，可以使用以下完整结构：
-
-```json
-{
-  "name": "personal",
-  "interface": {
-    "displayName": "Personal"
-  },
-  "plugins": [
-    {
-      "name": "mix-reference-comparator",
-      "source": {
-        "source": "local",
-        "path": "./.codex/plugins/mix-reference-comparator"
-      },
-      "policy": {
-        "installation": "AVAILABLE",
-        "authentication": "ON_INSTALL"
-      },
-      "category": "Creative"
-    }
-  ]
-}
-```
-
-### 3. 安装插件
-
-完全退出并重新打开 Codex，然后从 Plugins Directory 的 `Personal` 来源安装；也可以使用 CLI：
-
-```powershell
-codex plugin add mix-reference-comparator@personal
-```
-
-安装或更新后建议新建 Codex 任务，确保新任务加载最新 Skill。
-
-## 在 Codex 中使用
-
-向 Codex 提供一条待评估人声和一个或多个参考文件，例如：
-
-```text
-请用 Mix Reference Comparator 的人声参考模式分析：
-待评估人声：C:\Audio\my-vocal.wav
-参考 A：C:\Audio\reference-a.wav
-参考 B：C:\Audio\reference-b.wav
-其中参考 B 是 Source Separation 文件。请进行 full 分析并给出优先调整方案。
-```
-
-也可以直接询问某个问题：
-
-```text
-判断我的 Doubler 为什么听起来像左、中、右三个点，而参考人声为什么像连续扩散区域。
-```
-
-### 默认输出路径与对话内报告
-
-如果没有指定输出路径，插件会在运行前明确告知实际保存位置。默认情况下，若 `C:\Projects\work` 存在且可写，会在其中创建本次任务的独立子目录；否则使用当前任务可写的独立输出目录。
-
-分析完成后，插件会先把最终报告的完整正文、表格、结论和主要图片直接呈现在 Codex 回复中，再列出 `reference-set-report.md` 等输出文件的绝对路径。因此没有合适的 Markdown 查看器也能直接阅读报告。
-
-## 直接运行分析脚本
-
-插件以 `compare_reference_set.py` 作为统一 Orchestrator。先进入 Skill 目录：
+## 直接运行：干声模式
 
 ```powershell
 Set-Location ".\skills\compare-vocal-references"
-```
-
-### 安装依赖
-
-推荐将依赖安装到独立目录：
-
-```powershell
 python .\scripts\bootstrap_deps.py --target "C:\Projects\work\vocal-reference-deps"
 $env:PYTHONPATH = "C:\Projects\work\vocal-reference-deps"
-```
 
-依赖包括：
-
-- `numpy`
-- `scipy`
-- `soundfile`
-- `matplotlib`
-- `pyloudnorm`
-- `librosa`
-
-### 单参考
-
-```powershell
-python .\scripts\compare_reference_set.py `
-  --target "My Vocal=C:\Audio\my-vocal.wav" `
-  --reference "Reference A=C:\Audio\reference-a.wav" `
-  --analysis-level full `
-  --out-dir "C:\Projects\work\vocal-comparison"
-```
-
-### 多参考与分离参考
-
-```powershell
 python .\scripts\compare_reference_set.py `
   --target "My Vocal=C:\Audio\my-vocal.wav" `
   --reference "Reference A=C:\Audio\reference-a.wav" `
@@ -177,70 +88,55 @@ python .\scripts\compare_reference_set.py `
   --out-dir "C:\Projects\work\vocal-reference-set"
 ```
 
-`--reference` 可以重复。`--separated-reference` 的标签必须与对应 `--reference` 标签完全一致。
+`--reference` 可以重复。`basic`、`detail`、`full` 分别增加细节与高级空间分析。
 
-## Analysis Level
+## 直接运行：完整混音模式
 
-| Value | 内容 |
-| --- | --- |
-| `basic` | 电平、基础音色、动态、纹理和基础空间指标 |
-| `detail` | `basic` 加动态频段、咬字、宏微动态、谐波和颗粒诊断 |
-| `full` | `detail` 加高级空间分布、相干度、延迟峰和 Side 尾部诊断 |
+```powershell
+Set-Location ".\skills\compare-mix-references"
+python .\scripts\bootstrap_deps.py --target "C:\Projects\work\mix-reference-deps"
+$env:PYTHONPATH = "C:\Projects\work\mix-reference-deps"
 
-完整报告默认使用 `full`。
+python .\scripts\compare_mix_references.py `
+  --project "C:\Projects\work\my-analysis\mix-project.json" `
+  --out-dir "C:\Projects\work\my-analysis"
+```
 
-## 输出文件
-
-统一 Orchestrator 会生成：
+完整混音模式输出：
 
 ```text
 output/
-├── reference-set-metrics.json
-├── reference-set-report.md
-├── R1_levels_and_timbre.png
-├── R2_dynamics_and_texture.png
-├── R3_spatial_reference_field.png
-├── R4_consensus_and_outliers.png
+├── mix-project.json
+├── mix-reference-metrics.json
+├── mix-reference-report.md
 ├── execution-log.json
-└── pairwise/
-    └── <reference>/
-        ├── basic/
-        ├── detail/
-        └── spatial/
+├── M01_master_loudness_dynamics.png
+├── M02_tonal_balance.png
+├── M03_stereo_translation.png
+├── M04_section_structure.png
+├── M05_vocal_instrument_balance.png
+├── M06_frequency_conflict.png
+├── M07_fusion_components.png
+├── M08_stem_balance_arrangement.png
+├── M09_drums_bass.png
+├── M10_lead_pad_occupancy.png
+├── M11_reference_intervals.png
+└── M12_reference_matching_confidence.png
 ```
 
-其中：
+缺少 Stems 时，`M05`–`M10` 会显示“证据不足”和所缺输入，不会用零值假数据代替。
 
-- `reference-set-report.md`：面向实际混音决策的中文汇总报告；
-- `reference-set-metrics.json`：可复用的结构化测量结果；
-- `R1–R4`：多参考总览图；
-- `pairwise/`：待评估人声与每个参考的一对一完整证据；
-- `execution-log.json`：实际执行的命令和结果，便于复现与排错。
+## 可信度
 
-## 可信度与解释边界
+子图等级只使用：`高`、`中高`、`中`、`中低`、`低`、`证据不足`。
 
-每个独立子图使用以下可信度等级：
+报告结论分为：
 
-- `高`
-- `中高`
-- `中`
-- `中低`
-- `低`
-- `证据不足`
+1. **测量结果**：数据直接支持。
+2. **强推断**：多个独立中高/高可信证据指向同一方向。
+3. **假设**：合理但无法仅凭渲染音频确认。
 
-报告把结论分为三层：
-
-1. **测量结果**：由图表或指标直接支持。
-2. **强推断**：多项相互独立的证据指向同一处理方向。
-3. **假设**：合理，但无法仅凭最终渲染音频确认。
-
-请注意：
-
-- 启发式指标不能证明使用了某个具体商业插件。
-- Source Separation 可能制造 Musical Noise、瞬态涂抹、虚假宽度和相位残留。
-- 不同歌手、音域、话筒、编曲和母带处理会降低直接可比性。
-- 音色判断前应先控制响度，避免把“更响”误判为“更好”。
-- 不应把不同歌手之间的频段差值直接照抄成 Static EQ 增益。
+少于三个参考不能称为稳定“参考共性”。Source Separation 会产生泄漏、Musical Noise、瞬态涂抹和虚假宽度，必须降级解释。
 
 ## 项目结构
 
@@ -249,7 +145,15 @@ mix-reference-comparator/
 ├── .codex-plugin/
 │   └── plugin.json
 ├── skills/
-│   └── compare-vocal-references/
+│   ├── select-reference-analysis-mode/
+│   │   ├── SKILL.md
+│   │   └── agents/
+│   ├── compare-vocal-references/
+│   │   ├── SKILL.md
+│   │   ├── agents/
+│   │   ├── references/
+│   │   └── scripts/
+│   └── compare-mix-references/
 │       ├── SKILL.md
 │       ├── agents/
 │       ├── references/
@@ -257,26 +161,31 @@ mix-reference-comparator/
 └── README.md
 ```
 
-- `.codex-plugin/plugin.json`：Plugin Manifest 和 Codex 展示信息。
-- `SKILL.md`：触发条件、分析工作流和交付规则。
-- `references/`：测量定义、因果边界、报告规范和空间诊断方法。
-- `scripts/`：确定性音频分析、可视化和多参考汇总脚本。
-
-## 更新本地安装
-
-拉取新版本后重新安装插件：
+## Codex 个人安装
 
 ```powershell
-git -C "$env:USERPROFILE\.codex\plugins\mix-reference-comparator" pull
+git clone https://github.com/YiboTeng/mix-reference-comparator.git `
+  "$env:USERPROFILE\.codex\plugins\mix-reference-comparator"
+```
+
+个人 Marketplace 条目中的 `name` 使用 `mix-reference-comparator`，本地路径使用：
+
+```text
+./.codex/plugins/mix-reference-comparator
+```
+
+安装命令：
+
+```powershell
 codex plugin add mix-reference-comparator@personal
 ```
 
-随后重启 Codex，并在新任务中验证更新。
+本地开发源更新后，需要走 cachebuster 与重装流程；不要直接把开发目录当成安装缓存。
 
 ## 当前限制
 
-- 不能从成品音频准确反推出具体 Plugin、Preset 或完整参数。
-- 不同演唱内容通常只能比较统计分布，不能进行逐采样 Null Test。
-- 少量参考不足以建立稳定的风格共性；少于三个参考时应谨慎解释 Consensus。
-- 音高平台、Vibrato 和 Formant Proxy 仅作为低可信辅助项。
-- 自动报告仍需要结合监听、等响度 A/B Test 和实际工程上下文进行判断。
+- 不从 Master 无损拆出 Vocal、Drums、Bass、Lead 或 Pad。
+- 不识别具体 Plugin、Preset、母带链或万能参数。
+- 自动段落边界不知道 Verse/Chorus 语义。
+- 不同曲风、编曲、年代、平台母版和 Codec 会降低可比性。
+- 报告建议必须结合监听、等响度 A/B 和真实工程上下文。

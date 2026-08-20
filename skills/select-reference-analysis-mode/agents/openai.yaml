@@ -1,0 +1,4 @@
+interface:
+  display_name: "选择参考分析模式"
+  short_description: "在干声对比与完整混音成品对比之间选择正确分析流程"
+  default_prompt: "使用 $select-reference-analysis-mode 启动 Mix Reference Comparator，并让我选择干声对比或混音成品对比模式。"

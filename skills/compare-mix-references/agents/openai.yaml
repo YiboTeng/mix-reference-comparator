@@ -1,0 +1,4 @@
+interface:
+  display_name: "完整混音参考对比"
+  short_description: "对比完整 Mix/Master，并在有 Stem 时诊断人声与伴奏关系"
+  default_prompt: "使用 $compare-mix-references 将我的完整混音成品与一个或多个参考 Mix/Master 对比，为每个子图标注可信度。"
